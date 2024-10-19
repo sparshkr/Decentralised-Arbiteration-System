@@ -1,6 +1,5 @@
 "use client";
-import { ThemeProvider } from "@/components/theme-provider";
-import { Navbar } from "@/components/Navbar";
+
 import { Hero } from "@/components/Hero";
 import { Sponsors } from "@/components/Sponsors";
 import { About } from "@/components/About";
