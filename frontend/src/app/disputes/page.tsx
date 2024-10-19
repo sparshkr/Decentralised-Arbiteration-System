@@ -9,63 +9,99 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Check, X } from "lucide-react";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { BadgeDollarSign} from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+
 
 // Define the Dispute type based on the provided struct
 type Dispute = {
+  title: string,
   id: number;
   clientA: string;
   clientB: string;
   description: string;
   isResolved: boolean;
+  clientAStatement: string;
+  clientBStatement: string;
 };
 
 // Mock data for disputes
 const disputes: Dispute[] = [
   {
     id: 1,
+    title:"Dispute number 1",
     clientA: "0x1234...5678",
     clientB: "0xabcd...efgh",
+    clientAStatement:"This is client A statement",
+    clientBStatement:"This is client B statement",
     description: "Disagreement over project deliverables",
     isResolved: false,
   },
   {
     id: 2,
+    title:"Dispute number 2",
     clientA: "0x8765...4321",
     clientB: "0xijkl...mnop",
+    clientAStatement:"This is client A statement",
+    clientBStatement:"This is client B statement",
     description: "Payment dispute for completed work",
     isResolved: true,
   },
   {
     id: 3,
+    title:"Dispute number 3",
     clientA: "0x2468...1357",
     clientB: "0xqrst...uvwx",
+    clientAStatement:"This is client A statement",
+    clientBStatement:"This is client B statement",
     description: "Conflict regarding intellectual property rights",
     isResolved: false,
   },
   {
     id: 4,
+    title:"Dispute number 4",
     clientA: "0x1234...5678",
     clientB: "0xabcd...efgh",
+    clientAStatement:"This is client A statement",
+    clientBStatement:"This is client B statement",
     description: "Disagreement over project deliverables",
     isResolved: false,
   },
   {
     id: 5,
+    title:"Dispute number 5",
     clientA: "0x8765...4321",
     clientB: "0xijkl...mnop",
+    clientAStatement:"This is client A statement",
+    clientBStatement:"This is client B statement",
     description: "Payment dispute for completed work",
     isResolved: true,
   },
   {
     id: 6,
+    title:"Dispute number 6",
     clientA: "0x2468...1357",
     clientB: "0xqrst...uvwx",
+    clientAStatement:"This is client A statement",
+    clientBStatement:"This is client B statement",
     description: "Conflict regarding intellectual property rights",
     isResolved: false,
   },
 ];
 
 export default function DisputePage() {
+
   return (
     <div className="relative min-h-screen overflow-hidden">
       {/* Moving Shadow effect */}
@@ -98,9 +134,45 @@ export default function DisputePage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm mb-4">{dispute.description}</p>
-                  <Button className="w-full">
-                    {dispute.isResolved ? "View Resolution" : "Resolve Dispute"}
-                  </Button>
+                  <Dialog>
+                    <DialogTrigger>{dispute.isResolved ? "View Resolution" : "Resolve Dispute"}</DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>{dispute.title}</DialogTitle>
+                        <DialogDescription>
+                          {dispute.description}
+                          <div>
+                            <span className="text-white text-base">Client A Statement: </span>
+                            {dispute.clientAStatement}
+                          </div>
+                          <div>
+                            <span className="text-white text-base">Client B Statement: </span>
+                            {dispute.clientBStatement}
+                          </div>
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="flex items-center space-x-2">
+                      <div className="grid flex-1 gap-2">
+                        <span className="text-lg text-white">Amount of tokens that you want to Stake:</span>
+                        <Label htmlFor="Stake Amount" className="sr-only">
+                          Stake amount
+                        </Label>
+                        <div className="flex">
+                          <Input
+                            id="Stake Amount"
+                            defaultValue="100"
+                            readOnly
+                            className="w-fit"
+                          />
+                          <Button type="submit" size="sm" className="p-3 mx-4">
+                            <span className="sr-only">Copy</span>
+                          <BadgeDollarSign className="h-4 w-4" />
+                        </Button>
+                        </div>
+                      </div>
+                    </div>
+                    </DialogContent>
+                  </Dialog>
                 </CardContent>
                 <hr className="w-4/5 m-auto mb-4" />
                 <CardFooter className="flex">
