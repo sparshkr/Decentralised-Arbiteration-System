@@ -18,8 +18,7 @@ import { ScrollToTop } from "@/components/ScrollToTop";
 
 export default function Home() {
   return (
-    <ThemeProvider>
-      <Navbar />
+    <>
       <Hero />
       <Sponsors />
       <About />
@@ -34,6 +33,6 @@ export default function Home() {
       <FAQ />
       <Footer />
       <ScrollToTop />
-    </ThemeProvider>
+    </>
   );
 }
