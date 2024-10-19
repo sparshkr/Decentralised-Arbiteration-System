@@ -50,112 +50,120 @@ export default function CreateDisputeForm() {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle className="text-2xl font-bold">Create Dispute</CardTitle>
-      </CardHeader>
-      <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-6">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="clientA">Client A Address</Label>
-              <Input
-                id="clientA"
-                placeholder="0x..."
-                value={clientA}
-                onChange={(e) => setClientA(e.target.value)}
-                required
-              />
+    <div>
+      {/* Moving Shadow effect */}
+      <div className="fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute left-[10%] top-[20%] w-[500px] h-[500px] bg-purple-500/30 rounded-full blur-[128px] animate-blob animation-delay-2000"></div>
+        <div className="absolute right-[10%] bottom-[20%] w-[400px] h-[400px] bg-cyan-500/30 rounded-full blur-[128px] animate-blob"></div>
+        <div className="absolute left-[60%] bottom-[10%] w-[300px] h-[300px] bg-yellow-500/30 rounded-full blur-[128px] animate-blob animation-delay-4000"></div>
+      </div>
+      <Card className="w-full max-w-md mx-auto">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold">Create Dispute</CardTitle>
+        </CardHeader>
+        <form onSubmit={handleSubmit}>
+          <CardContent className="space-y-6">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="clientA">Client A Address</Label>
+                <Input
+                  id="clientA"
+                  placeholder="0x..."
+                  value={clientA}
+                  onChange={(e) => setClientA(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="clientB">Client B Address</Label>
+                <Input
+                  id="clientB"
+                  placeholder="0x..."
+                  value={clientB}
+                  onChange={(e) => setClientB(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  placeholder="Describe the dispute..."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="deadline">Deadline</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !deadline && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {deadline ? (
+                        format(deadline, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={deadline}
+                      onSelect={setDeadline}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
             </div>
+
+            <Separator />
+
             <div className="space-y-2">
-              <Label htmlFor="clientB">Client B Address</Label>
-              <Input
-                id="clientB"
-                placeholder="0x..."
-                value={clientB}
-                onChange={(e) => setClientB(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                placeholder="Describe the dispute..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="deadline">Deadline</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !deadline && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {deadline ? (
-                      format(deadline, "PPP")
-                    ) : (
-                      <span>Pick a date</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={deadline}
-                    onSelect={setDeadline}
-                    initialFocus
+              <Label>Skills Required by Jury Members</Label>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="web-dev"
+                    checked={requiredSkills.includes("web-dev")}
+                    onCheckedChange={() => handleSkillChange("web-dev")}
                   />
-                </PopoverContent>
-              </Popover>
-            </div>
-          </div>
-
-          <Separator />
-
-          <div className="space-y-2">
-            <Label>Skills Required by Jury Members</Label>
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="web-dev"
-                  checked={requiredSkills.includes("web-dev")}
-                  onCheckedChange={() => handleSkillChange("web-dev")}
-                />
-                <Label htmlFor="web-dev">Web Development</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="ai-ml"
-                  checked={requiredSkills.includes("ai-ml")}
-                  onCheckedChange={() => handleSkillChange("ai-ml")}
-                />
-                <Label htmlFor="ai-ml">AI/ML</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="content-writing"
-                  checked={requiredSkills.includes("content-writing")}
-                  onCheckedChange={() => handleSkillChange("content-writing")}
-                />
-                <Label htmlFor="content-writing">Content Writing</Label>
+                  <Label htmlFor="web-dev">Web Development</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="ai-ml"
+                    checked={requiredSkills.includes("ai-ml")}
+                    onCheckedChange={() => handleSkillChange("ai-ml")}
+                  />
+                  <Label htmlFor="ai-ml">AI/ML</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="content-writing"
+                    checked={requiredSkills.includes("content-writing")}
+                    onCheckedChange={() => handleSkillChange("content-writing")}
+                  />
+                  <Label htmlFor="content-writing">Content Writing</Label>
+                </div>
               </div>
             </div>
-          </div>
-        </CardContent>
-        <CardFooter>
-          <Button type="submit" className="w-full">
-            Create Dispute
-          </Button>
-        </CardFooter>
-      </form>
-    </Card>
+          </CardContent>
+          <CardFooter>
+            <Button type="submit" className="w-full">
+              Create Dispute
+            </Button>
+          </CardFooter>
+        </form>
+      </Card>
+    </div>
   );
 }
