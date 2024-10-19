@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ethers } from "ethers";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -44,6 +45,45 @@ const routeList: RouteProps[] = [
 
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
+
+  // const web3Refs = useRef({
+  //   conversionRate: null,
+  //   provider: null,
+  //   signer: null,
+  //   contract_marketplace: null,
+  //   contract_nft: null,
+  //   contract_chainlinkGET: null
+  // });
+
+  // const connectToWeb3 = useCallback(async () => {
+  const connectToWeb3 = async () => {
+    if (window.ethereum != null) {
+      try {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+
+        console.log("this is provider:", provider);
+        console.log("this is signer:", signer);
+
+        // web3Refs.current.contract_chainlinkGET = new Contract(address_chainlink, abi_chainlink, web3Refs.current.signer);
+        // web3Refs.current.contract_nft = new Contract(address_nft, abi_nft, web3Refs.current.signer);
+        // web3Refs.current.contract_marketplace = new Contract(address_marketplace, abi_marketplace, web3Refs.current.signer);
+
+        console.log('Connected to Web3 successsfully');
+      } catch (error) {
+        console.log("Error connecting with metamask...");
+        console.log(error);
+      }
+    } else {
+      console.log("MetaMask not installed; using read-only defaults");
+    }
+  }
+  // }, [firstVisit]);
+
+  // useEffect(() => {
+  //   connectToWeb3();
+  // }, [count, connectToWeb3]);
+
   return (
     <header className="sticky border-b-[1px] top-0 z-40 w-full bg-white dark:border-b-slate-700 dark:bg-background">
       <NavigationMenu className="mx-auto">
@@ -126,13 +166,19 @@ export const Navbar = () => {
           <div className="hidden md:flex gap-2">
             <a
               rel="noreferrer noopener"
-              href="https://github.com/leoMirandaa/shadcn-landing-page.git"
               target="_blank"
               className={`border ${buttonVariants({ variant: "secondary" })}`}
+              onClick={async () => await connectToWeb3()}
             >
               <GitHubLogoIcon className="mr-2 w-5 h-5" />
-              Wallet
+              <button onClick={async () => await connectToWeb3()}>Wallet</button>
             </a>
+            {/* <button
+              onClick={() => connectToWeb3()}
+              className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600"
+            >
+              Connect MetaMask
+            </button> */}
 
             <ModeToggle />
           </div>
