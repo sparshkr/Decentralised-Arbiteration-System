@@ -17,6 +17,7 @@ import { buttonVariants } from "./ui/button";
 import { Menu } from "lucide-react";
 import { ModeToggle } from "./mode-toggle";
 import { LogoIcon } from "./Icons";
+import 
 
 interface RouteProps {
   href: string;
@@ -42,8 +43,63 @@ const routeList: RouteProps[] = [
   },
 ];
 
+
+
+
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
+
+
+
+  const handleLogin = async () => {
+    if (web3auth) {
+        if (web3auth.connected) {
+            setLoggedIn(true);
+        }
+
+        await web3auth.connect();
+
+        const userInfo = await web3auth.getUserInfo();
+        const address: string = await getAccounts();
+        console.log('User info: ', userInfo);
+        console.log('User address: ', address);
+
+        // Store userInfo and address in local storage
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('userInfo', JSON.stringify(userInfo));
+            localStorage.setItem('address', address);
+        }
+
+        let _showOnboardingModal = false;
+
+        try {
+            const serverResponse = await fetch('/api/postLoginFlow', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ address: address, userInfo: userInfo }),
+            });
+
+            const data = await serverResponse.json();
+            console.log('Server response data: ', data);
+
+            if (!data.onboarded) {
+                _showOnboardingModal = true;
+                router.push(`/dashboard?showOnboardingModal=${_showOnboardingModal}`); // Navigate to dashboard with onboarding modal flag
+            } else {
+                router.push(`/dashboard`);
+            }
+            // if (data.onboarded) {
+            //     router.push(`/dashboard?showOnboardingModal=${_showOnboardingModal}`); // Navigate to dashboard with onboarding modal flag
+            // }
+
+        } catch (error) {
+            console.log('Error: ', error);
+            throw error;
+        }
+    }
+};
   return (
     <header className="sticky border-b-[1px] top-0 z-40 w-full bg-white dark:border-b-slate-700 dark:bg-background">
       <NavigationMenu className="mx-auto">
