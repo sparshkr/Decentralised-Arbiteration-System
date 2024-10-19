@@ -17,21 +17,31 @@ import { ScrollToTop } from "@/components/ScrollToTop";
 
 export default function Home() {
   return (
-    <>
-      <Hero />
-      <Sponsors />
-      <About />
-      <HowItWorks />
-      <Features />
-      <Services />
-      <Cta />
-      <Testimonials />
-      <Team />
-      <Pricing />
-      <Newsletter />
-      <FAQ />
-      <Footer />
-      <ScrollToTop />
-    </>
+    <div className="relative min-h-screen overflow-hidden">
+      {/* Moving Shadow effect */}
+      <div className="fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute left-[10%] top-[20%] w-[500px] h-[500px] bg-purple-500/30 rounded-full blur-[128px] animate-blob animation-delay-2000"></div>
+        <div className="absolute right-[10%] bottom-[20%] w-[400px] h-[400px] bg-cyan-500/30 rounded-full blur-[128px] animate-blob"></div>
+        <div className="absolute left-[60%] bottom-[10%] w-[300px] h-[300px] bg-yellow-500/30 rounded-full blur-[128px] animate-blob animation-delay-4000"></div>
+      </div>
+
+      {/* Page content */}
+      <div className="relative z-10">
+        <Hero />
+        <Sponsors />
+        <About />
+        <HowItWorks />
+        <Features />
+        <Services />
+        <Cta />
+        <Testimonials />
+        <Team />
+        <Pricing />
+        <Newsletter />
+        <FAQ />
+        <Footer />
+        <ScrollToTop />
+      </div>
+    </div>
   );
 }
