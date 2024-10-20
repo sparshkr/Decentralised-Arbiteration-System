@@ -35,12 +35,7 @@ interface NavbarProps {
   children?: ReactNode;
 }
 
-const routeList: RouteProps[] = [
-  { href: "#features", label: "Features" },
-  { href: "#testimonials", label: "Testimonials" },
-  { href: "#pricing", label: "Pricing" },
-  { href: "#faq", label: "FAQ" },
-];
+const routeList: RouteProps[] = [];
 
 export const Navbar: React.FC<NavbarProps> = ({ children }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
