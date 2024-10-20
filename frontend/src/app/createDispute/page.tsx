@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -15,6 +15,8 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Calendar } from "@/components/ui/calendar";
+import { Skeleton } from "@/components/ui/skeleton";
+
 import {
   Popover,
   PopoverContent,
@@ -23,6 +25,7 @@ import {
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useWeb3 } from "@/provider/Web3Context";
 
 export default function CreateDisputeForm() {
   const [clientA, setClientA] = useState("");
@@ -30,6 +33,28 @@ export default function CreateDisputeForm() {
   const [description, setDescription] = useState("");
   const [requiredSkills, setRequiredSkills] = useState<string[]>([]);
   const [deadline, setDeadline] = useState<Date | undefined>(undefined);
+  const { signer, connectToWeb3 } = useWeb3();
+  const [loading, setLoading] = useState(true); // Loading state
+
+  useEffect(() => {
+    const connect = async () => {
+      if (!signer) {
+        await connectToWeb3(); // Try to connect on mount
+      }
+      setLoading(false); // Set loading to false after attempting to connect
+    };
+    connect();
+  }, [signer, connectToWeb3]);
+
+  useEffect(() => {
+    const logSignerAddress = async () => {
+      if (signer) {
+        const temp = await signer.getAddress(); // Await here
+        console.log("Signer:", temp); // Log signer whenever it changes
+      }
+    };
+    logSignerAddress(); // Call the async function
+  }, [signer]);
 
   const handleSkillChange = (skill: string) => {
     setRequiredSkills((prev) =>
@@ -39,7 +64,11 @@ export default function CreateDisputeForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically send this data to your backend or smart contract
+    if (!signer) {
+      console.error("Signer not available. Please connect your wallet.");
+      return;
+    }
+    // Proceed with form submission logic
     console.log({ clientA, clientB, description, requiredSkills, deadline });
     // Reset form after submission
     setClientA("");
@@ -49,9 +78,14 @@ export default function CreateDisputeForm() {
     setDeadline(undefined);
   };
 
+  // Show loading indicator while connecting
+  if (loading) {
+    return <Skeleton className="w-[100vw] h-[100vh] rounded-none" />;
+    // You can replace this with a nice spinner or loader
+  }
+
   return (
     <div>
-      {/* Moving Shadow effect */}
       <div className="fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute left-[10%] top-[20%] w-[500px] h-[500px] bg-purple-500/30 rounded-full blur-[128px] animate-blob animation-delay-2000"></div>
         <div className="absolute right-[10%] bottom-[20%] w-[400px] h-[400px] bg-cyan-500/30 rounded-full blur-[128px] animate-blob"></div>
@@ -158,7 +192,7 @@ export default function CreateDisputeForm() {
             </div>
           </CardContent>
           <CardFooter>
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full" disabled={!signer}>
               Create Dispute
             </Button>
           </CardFooter>
