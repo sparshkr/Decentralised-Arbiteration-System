@@ -15,6 +15,8 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Calendar } from "@/components/ui/calendar";
+import { Skeleton } from "@/components/ui/skeleton";
+
 import {
   Popover,
   PopoverContent,
@@ -78,11 +80,17 @@ export default function CreateDisputeForm() {
 
   // Show loading indicator while connecting
   if (loading) {
-    return <div>Loading...</div>; // You can replace this with a nice spinner or loader
+    return <Skeleton className="w-[100vw] h-[100vh] rounded-none" />;
+    // You can replace this with a nice spinner or loader
   }
 
   return (
     <div>
+      <div className="fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute left-[10%] top-[20%] w-[500px] h-[500px] bg-purple-500/30 rounded-full blur-[128px] animate-blob animation-delay-2000"></div>
+        <div className="absolute right-[10%] bottom-[20%] w-[400px] h-[400px] bg-cyan-500/30 rounded-full blur-[128px] animate-blob"></div>
+        <div className="absolute left-[60%] bottom-[10%] w-[300px] h-[300px] bg-yellow-500/30 rounded-full blur-[128px] animate-blob animation-delay-4000"></div>
+      </div>
       <Card className="w-full max-w-md mx-auto">
         <CardHeader>
           <CardTitle className="text-2xl font-bold">Create Dispute</CardTitle>
