@@ -4,7 +4,7 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 
 const DisputeHandlerModule = buildModule("DisputeHandlerModule", (m) => {
-  const DisputeHandler = m.contract("DisputeHandler", ["0xb6806bcA6042C9328A4aeDac5B6270Ae4651811e"]);
+  const DisputeHandler = m.contract("DisputeHandler", ["0xb09da8a5B236fE0295A345035287e80bb0008290"]);
   return { DisputeHandler };
 });
 
