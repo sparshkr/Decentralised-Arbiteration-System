@@ -1,7 +1,8 @@
 "use client";
 
 import React, { ReactNode, useState } from "react";
-import { useWeb3 } from "@/provider/Web3Context"; // Adjust the path as needed
+import { useWeb3 } from "@/provider/Web3Context";
+import { useRouter } from "next/navigation";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -14,8 +15,13 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
-import { buttonVariants } from "./ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import { ModeToggle } from "./mode-toggle";
 import { LogoIcon } from "./Icons";
@@ -26,7 +32,7 @@ interface RouteProps {
 }
 
 interface NavbarProps {
-  children?: ReactNode; // Add children as an optional prop
+  children?: ReactNode;
 }
 
 const routeList: RouteProps[] = [
@@ -38,7 +44,24 @@ const routeList: RouteProps[] = [
 
 export const Navbar: React.FC<NavbarProps> = ({ children }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const { connectToWeb3 } = useWeb3(); // Use the connectToWeb3 function from context
+  const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
+  const { connectToWeb3 } = useWeb3();
+  const router = useRouter();
+
+  const handleLogin = async (role: "juror" | "uploader") => {
+    setIsPopoverOpen(false);
+    try {
+      await connectToWeb3();
+      if (role === "juror") {
+        router.push("/disputes");
+      } else {
+        router.push("/createDispute");
+      }
+    } catch (error) {
+      console.error("Failed to connect:", error);
+      // Handle error (e.g., show an error message to the user)
+    }
+  };
 
   return (
     <header className="sticky border-b-[1px] top-0 z-40 w-full bg-white dark:border-b-slate-700 dark:bg-background">
@@ -100,13 +123,25 @@ export const Navbar: React.FC<NavbarProps> = ({ children }) => {
           </nav>
 
           <div className="hidden md:flex gap-2">
-            <button
-              className={`border ${buttonVariants({ variant: "secondary" })}`}
-              onClick={connectToWeb3} // Call the connectToWeb3 function from context
-            >
-              <GitHubLogoIcon className="mr-2 w-5 h-5" />
-              Wallet
-            </button>
+            <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="secondary" className="border">
+                  <GitHubLogoIcon className="mr-2 w-5 h-5" />
+                  Wallet
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56">
+                <div className="grid gap-4">
+                  <h4 className="font-medium leading-none">Go to:</h4>
+                  <div className="grid gap-2">
+                    <Button onClick={() => handleLogin("juror")}>Juror</Button>
+                    <Button onClick={() => handleLogin("uploader")}>
+                      Dispute Uploader
+                    </Button>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
             <ModeToggle />
           </div>
         </NavigationMenuList>
