@@ -19,7 +19,6 @@ contract Marketplace is Ownable {
     uint256 private disputeCount = 0;
     address private immutable DISPUTE_HANDLER;
     address private immutable GRULL_TOKEN_ADDRESS;
-    address private immutable ESCROW;
 
     modifier ONLY_DISPUTE_HANDLER() {
         require(msg.sender == DISPUTE_HANDLER, "Access Denied!");
@@ -39,19 +38,18 @@ contract Marketplace is Ownable {
     // Owner Need to be EOA / Multisig acc
     constructor(
         address tokenAddress,
-        address disputeHandler,
-        address escrowAddress
+        address disputeHandler
     ) Ownable(msg.sender) {
         GRULL_TOKEN_ADDRESS = tokenAddress;
         DISPUTE_HANDLER = disputeHandler;
-        ESCROW = escrowAddress;
     }
 
     function createDispute(
         address _clientA,
         address _clientB,
         string memory _description,
-        uint _votingDeadline
+        uint _votingDeadline,
+        uint[] memory _skillsReqd
     ) external {
         require(_clientA != _clientB, "Two parties cant be same");
         require(bytes(_description).length > 0, "Description cannot be empty");
@@ -67,6 +65,7 @@ contract Marketplace is Ownable {
             clientA: _clientA,
             clientB: _clientB,
             description: _description,
+            skillsReqd: _skillsReqd,
             votingDeadline: _votingDeadline,
             isResolved: false
         });
