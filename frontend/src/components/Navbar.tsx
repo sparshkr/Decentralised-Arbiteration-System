@@ -1,6 +1,6 @@
 "use client";
 
-import React, { ReactNode, useState } from "react";
+import React, { ReactNode, useEffect, useState } from "react";
 import { useWeb3 } from "@/provider/Web3Context";
 import { useRouter } from "next/navigation";
 import {
@@ -40,13 +40,34 @@ const routeList: RouteProps[] = [];
 export const Navbar: React.FC<NavbarProps> = ({ children }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
-  const { connectToWeb3 } = useWeb3();
+  const [walletAddress, setWalletAddress] = useState<string>(""); // Start with an empty string
+  const { signer, connectToWeb3 } = useWeb3();
   const router = useRouter();
+
+  useEffect(() => {
+    const updateWalletAddress = async () => {
+      if (signer) {
+        try {
+          const address = await signer.getAddress();
+          setWalletAddress(address);
+        } catch (error) {
+          console.error("Error fetching address:", error);
+          setWalletAddress("Error fetching address");
+        }
+      } else {
+        // If no signer, check if MetaMask is installed and try to connect
+        await connectToWeb3();
+      }
+    };
+
+    updateWalletAddress();
+  }, [signer]); // This will trigger whenever `signer` changes
 
   const handleLogin = async (role: "juror" | "uploader") => {
     setIsPopoverOpen(false);
     try {
       await connectToWeb3();
+
       if (role === "juror") {
         router.push("/disputes");
       } else {
@@ -54,7 +75,6 @@ export const Navbar: React.FC<NavbarProps> = ({ children }) => {
       }
     } catch (error) {
       console.error("Failed to connect:", error);
-      // Handle error (e.g., show an error message to the user)
     }
   };
 
@@ -122,7 +142,7 @@ export const Navbar: React.FC<NavbarProps> = ({ children }) => {
               <PopoverTrigger asChild>
                 <Button variant="secondary" className="border">
                   <GitHubLogoIcon className="mr-2 w-5 h-5" />
-                  Wallet
+                  {walletAddress || "wallet not connected"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-56">
@@ -141,6 +161,8 @@ export const Navbar: React.FC<NavbarProps> = ({ children }) => {
           </div>
         </NavigationMenuList>
       </NavigationMenu>
+      {/* Render children if present */}
+      {children && <div className="mt-4">{children}</div>}
     </header>
   );
 };

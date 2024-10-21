@@ -14,9 +14,9 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [signer, setSigner] = useState<ethers.Signer | null>(null);
 
-  useEffect(() => {
-    console.log("Signer is ", signer);
-  }, [signer]);
+  // useEffect(() => {
+  //   console.log("Signer is ", signer);
+  // }, [signer]);
 
   const connectToWeb3 = async () => {
     if (window.ethereum) {
@@ -24,7 +24,7 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({
         const provider = new ethers.BrowserProvider(window.ethereum);
         const newSigner = await provider.getSigner();
         setSigner(newSigner);
-        console.log("Connected to Web3 successfully", newSigner);
+        console.log("Connected to Web3 successfully", newSigner.address);
       } catch (error) {
         console.error("Error connecting with MetaMask:", error);
       }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -15,8 +16,6 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Calendar } from "@/components/ui/calendar";
-import { Skeleton } from "@/components/ui/skeleton";
-
 import {
   Popover,
   PopoverContent,
@@ -26,16 +25,29 @@ import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useWeb3 } from "@/provider/Web3Context";
+import { ethers } from "ethers";
+import contractABI from "@/contracts-data/deployments/chain-31337/artifacts/MarketplaceModule#Marketplace.json";
+import ContractAddress from "@/contracts-data/deployments/chain-31337/deployed_addresses.json";
+// import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
+
+// Extract contract address correctly
+const contractAddress = ContractAddress["MarketplaceModule#Marketplace"];
 
 export default function CreateDisputeForm() {
-  const [clientA, setClientA] = useState("");
-  const [clientB, setClientB] = useState("");
-  const [description, setDescription] = useState("");
+  const [clientA, setClientA] = useState(
+    "0x337c787D769109Fc47686ccf816281Ad26e610B6"
+  );
+  const [clientB, setClientB] = useState(
+    "0x44b4b06D3446fF81c5c0E660d22CD51d4d9c3171"
+  );
+  const [description, setDescription] = useState("agasg");
   const [requiredSkills, setRequiredSkills] = useState<string[]>([]);
   const [deadline, setDeadline] = useState<Date | undefined>(undefined);
   const { signer, connectToWeb3 } = useWeb3();
-  const [loading, setLoading] = useState(true); // Loading state
-
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const { toast } = useToast();
   useEffect(() => {
     const connect = async () => {
       if (!signer) {
@@ -47,10 +59,21 @@ export default function CreateDisputeForm() {
   }, [signer, connectToWeb3]);
 
   useEffect(() => {
+    if (!loading && !signer) {
+      toast({
+        title: "Login Required",
+        description: "Please login first to view this page",
+        variant: "destructive",
+      });
+      router.push("http://localhost:3000/Attachment");
+    }
+  }, [loading, signer, router]);
+
+  useEffect(() => {
     const logSignerAddress = async () => {
       if (signer) {
-        const temp = await signer.getAddress(); // Await here
-        console.log("Signer:", temp); // Log signer whenever it changes
+        const address = await signer.getAddress();
+        console.log("Signer:", address); // Log signer whenever it changes
       }
     };
     logSignerAddress(); // Call the async function
@@ -62,26 +85,80 @@ export default function CreateDisputeForm() {
     );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!signer) {
-      console.error("Signer not available. Please connect your wallet.");
+      toast({
+        title: "Login Required",
+        description: "Please connect your wallet to create a dispute.",
+        variant: "destructive",
+      });
       return;
     }
-    // Proceed with form submission logic
-    console.log({ clientA, clientB, description, requiredSkills, deadline });
-    // Reset form after submission
-    setClientA("");
-    setClientB("");
-    setDescription("");
-    setRequiredSkills([]);
-    setDeadline(undefined);
+
+    if (!deadline) {
+      toast({
+        title: "Deadline Required",
+        description: "Please select a voting deadline.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Convert deadline to Unix timestamp
+    const votingDeadlineInSeconds = Math.floor(
+      deadline.getTime() / 1000 + 36000
+    );
+
+    try {
+      // Interact with the contract to create a dispute
+      const contract = new ethers.Contract(
+        contractAddress,
+        contractABI.abi,
+        signer
+      );
+
+      const tx = await contract.createDispute(
+        clientA,
+        clientB,
+        description,
+        votingDeadlineInSeconds,
+        requiredSkills.map(skillToID)
+      );
+
+      await tx.wait(); // Wait for transaction to be confirmed
+
+      toast({
+        title: "Dispute Created",
+        description: "Your dispute has been successfully created.",
+        variant: "default",
+      });
+
+      // Reset form after submission
+      setClientA("0x337c787D769109Fc47686ccf816281Ad26e610B6");
+      setClientB("0x44b4b06D3446fF81c5c0E660d22CD51d4d9c3171");
+      setDescription("adfasdf");
+      setRequiredSkills([]);
+      setDeadline(undefined);
+    } catch (error) {
+      console.error("Error creating dispute:", error);
+      toast({
+        title: "Error",
+        description:
+          "An error occurred while creating the dispute. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   // Show loading indicator while connecting
   if (loading) {
-    return <Skeleton className="w-[100vw] h-[100vh] rounded-none" />;
-    // You can replace this with a nice spinner or loader
+    return <div>Loading...</div>;
+  }
+
+  // If signer is null or undefined, the useEffect will handle redirection
+  if (!signer) {
+    return null;
   }
 
   return (
@@ -192,7 +269,7 @@ export default function CreateDisputeForm() {
             </div>
           </CardContent>
           <CardFooter>
-            <Button type="submit" className="w-full" disabled={!signer}>
+            <Button type="submit" className="w-full">
               Create Dispute
             </Button>
           </CardFooter>
@@ -201,3 +278,13 @@ export default function CreateDisputeForm() {
     </div>
   );
 }
+
+// Helper function for converting skill name to skill ID
+const skillToID = (skill: string) => {
+  const skillMap: { [key: string]: number } = {
+    "web-dev": 1,
+    "ai-ml": 2,
+    "content-writing": 3,
+  };
+  return skillMap[skill];
+};

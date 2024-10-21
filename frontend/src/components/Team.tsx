@@ -23,8 +23,9 @@ interface SociaNetworkslProps {
 
 const teamList: TeamProps[] = [
   {
-    imageUrl: "https://i.pravatar.cc/150?img=35",
-    name: "Emma Smith",
+    imageUrl:
+      "https://media.licdn.com/dms/image/v2/D4D35AQEANSjrT_vRug/profile-framedphoto-shrink_800_800/profile-framedphoto-shrink_800_800/0/1719440714924?e=1730131200&v=beta&t=bpEaaPMcXe4bXta9moG9bkKOuz59WNg1QFxCGBi0SYI",
+    name: "Vedant Asati",
     position: "Product Manager",
     socialNetworks: [
       {
@@ -42,8 +43,9 @@ const teamList: TeamProps[] = [
     ],
   },
   {
-    imageUrl: "https://i.pravatar.cc/150?img=60",
-    name: "John Doe",
+    imageUrl:
+      "https://media.licdn.com/dms/image/v2/D5603AQGieV6ivpYCfg/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1707653579836?e=1735171200&v=beta&t=pHfjs9tK6QpT4fldLIJEo1y_P5yvH8XeoTCTwfRdiZo",
+    name: "Sparsh Kumar",
     position: "Tech Lead",
     socialNetworks: [
       {
@@ -61,8 +63,9 @@ const teamList: TeamProps[] = [
     ],
   },
   {
-    imageUrl: "https://i.pravatar.cc/150?img=36",
-    name: "Ashley Ross",
+    imageUrl:
+      "https://media.licdn.com/dms/image/v2/D5603AQGa3B-wr2JT3w/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1725210930872?e=1735171200&v=beta&t=MwJqLINXOFuifoa0KJgxRQxOj_lBUo1xQ4yi1M6B9pA",
+    name: "Dipayan Debnath",
     position: "Frontend Developer",
     socialNetworks: [
       {
@@ -108,10 +111,7 @@ export const Team = () => {
   };
 
   return (
-    <section
-      id="team"
-      className="container py-24 sm:py-32"
-    >
+    <section id="team" className="container py-24 sm:py-32">
       <h2 className="text-3xl md:text-4xl font-bold">
         <span className="bg-gradient-to-b from-primary/60 to-primary text-transparent bg-clip-text">
           Our Dedicated{" "}
