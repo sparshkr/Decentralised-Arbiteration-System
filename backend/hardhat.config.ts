@@ -9,7 +9,7 @@ const config: HardhatUserConfig = {
       accounts: ["0xdf57089febbacf7ba0bc227dafbffa9fc08a93fdc68e1e42411a14efcf23656e"]
     },
     amoy: {
-      url: "https://virtual.polygon-amoy.rpc.tenderly.co/30e2a40a-02eb-491b-bb35-19093435c1bf",
+      url: "https://polygon-amoy.g.alchemy.com/v2/amODZKSuYm8UwilQ5zfFmyq9iWGwc1CE",
       accounts: ["07232d14bcaeecab26fba7eadd82ef94914e83d99c0b01fd1a2902fa0e300e94"]
     }
   },

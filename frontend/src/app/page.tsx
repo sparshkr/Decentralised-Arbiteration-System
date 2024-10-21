@@ -80,7 +80,7 @@ export default function CreateDisputeForm() {
     // }
 
     // Convert deadline to Unix timestamp
-    const votingDeadlineInSeconds = Math.floor(deadline.getTime() / 1000 + 36000);
+    const votingDeadlineInSeconds = Math.floor(deadline!.getTime() / 1000 + 36000);
     console.log("trying");
 
     try {

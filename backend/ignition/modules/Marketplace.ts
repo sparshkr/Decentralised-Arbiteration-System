@@ -4,7 +4,7 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 
 const MarketplaceModule = buildModule("MarketplaceModule", (m) => {
-  const Marketplace = m.contract("Marketplace", ["0xb09da8a5B236fE0295A345035287e80bb0008290","0x73511669fd4dE447feD18BB79bAFeAC93aB7F31f"]);
+  const Marketplace = m.contract("Marketplace", ["0x6Cad368371618bC56Ee6C70C2Fe4aF44a046C16A","0x076564e12fAB481B30EAE1a4C2FC1A816c7C2429"]);
   return { Marketplace };
 });
 
