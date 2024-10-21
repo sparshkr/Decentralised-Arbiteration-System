@@ -3,22 +3,25 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+struct Dispute {
+    uint256 id;
+    address creator;
+    address clientA;
+    address clientB;
+    string description;
+    uint[] skillsReqd ;
+    uint256 votingDeadline;
+    bool isResolved;
+    address winner;
+}
+
 contract Marketplace is Ownable {
-    struct Dispute {
-        uint256 id;
-        address creator;
-        address clientA;
-        address clientB;
-        string description;
-        uint[] skillsReqd ;
-        uint256 votingDeadline;
-        bool isResolved;
-    }
 
     mapping(uint256 => Dispute) public disputes;
     uint256 private disputeCount = 0;
     address private immutable DISPUTE_HANDLER;
     address private immutable GRULL_TOKEN_ADDRESS;
+    mapping(address => uint) public lastPurchase;
 
     modifier ONLY_DISPUTE_HANDLER() {
         require(msg.sender == DISPUTE_HANDLER, "Access Denied!");
@@ -33,7 +36,7 @@ contract Marketplace is Ownable {
         string description,
         uint256 votingDeadline
     );
-    event DisputeResolved(uint256 indexed disputeId);
+    event DisputeResolved(uint256 indexed disputeId, address winner);
 
     // Owner Need to be EOA / Multisig acc
     constructor(
@@ -44,6 +47,7 @@ contract Marketplace is Ownable {
         DISPUTE_HANDLER = disputeHandler;
     }
 
+    //************* For Dispute Creators ************//
     function createDispute(
         address _clientA,
         address _clientB,
@@ -67,11 +71,12 @@ contract Marketplace is Ownable {
             description: _description,
             skillsReqd: _skillsReqd,
             votingDeadline: _votingDeadline,
-            isResolved: false
+            isResolved: false,
+            winner: address(0)
         });
         // send to disputeHandler
-        // IDISPUTE_HANDLER(DISPUTE_HANDLER).submitForHandling(disputes[disputeCount]);
-
+        bool submitted = IDISPUTE_HANDLER(DISPUTE_HANDLER).handleCreateDispute(disputes[disputeCount], disputeCount);
+        require(submitted,"Failed to submit.");
         emit DisputeCreated(
             disputeCount,
             msg.sender,
@@ -83,7 +88,7 @@ contract Marketplace is Ownable {
     }
 
     // Only DISPUTE creator can call this function
-    function getDisputeResolved(uint256 _disputeId) external {
+    function getDisputeResolved(uint256 _disputeId) external returns (bool, address) {
         require(
             _disputeId > 0 && _disputeId <= disputeCount,
             "Invalid dispute ID"
@@ -94,19 +99,20 @@ contract Marketplace is Ownable {
         );
         require(disputes[_disputeId].creator == msg.sender, "Access denied");
 
-        bool isSettled = IDISPUTE_HANDLER(DISPUTE_HANDLER).settleDispute(
+        (bool isSettled, address winner) = IDISPUTE_HANDLER(DISPUTE_HANDLER).settleDispute(
             _disputeId
         );
         require(isSettled, "Error with settlement");
 
         disputes[_disputeId].isResolved = true;
+        disputes[_disputeId].winner = winner;
 
-        emit DisputeResolved(_disputeId);
+        emit DisputeResolved(_disputeId, winner);
+
+        return (isSettled, winner);
     }
 
-    function getDispute(
-        uint256 _disputeId
-    ) external view returns (Dispute memory) {
+    function getDispute(uint256 _disputeId) external view returns (Dispute memory) {
         require(
             _disputeId > 0 && _disputeId <= disputeCount,
             "Invalid dispute ID"
@@ -125,16 +131,65 @@ contract Marketplace is Ownable {
     function getDisputeCount() external view returns (uint256) {
         return disputeCount;
     }
+    //************* For Dispute Creators ************//
 
-    function buyGRULL() external payable returns (bool) {
-        // The value of token: 1 GRULL = 0.01 ETH
-        uint tokenAmount = msg.value * 100;
-        bool status = IGRULL(GRULL_TOKEN_ADDRESS).transfer(
-            msg.sender,
-            tokenAmount
+    //************* For Jury Members ************//
+    function stakeAndVote(
+        uint256 disputeId,
+        bool voteForA,
+        uint256 stakeAmount,
+        uint[] memory skills
+    ) external {
+        require(
+            disputes[disputeId].votingDeadline > block.timestamp,
+            "Voting deadline passed"
         );
-        return status;
+        IDISPUTE_HANDLER(DISPUTE_HANDLER).stakeAndVote(disputeId, voteForA, stakeAmount, skills);
     }
+    //************* For Jury Members ************//
+
+    //************* General Utility ************//
+    function buyGRULL() external payable returns (bool) {
+        uint256 maxPurchaseLimit = 1000 * 10**18;
+        uint256 timeLimit = 1 hours;
+
+        require(msg.value > 0, "Send some ETH to buy GRULL Tokens");
+        
+        require(
+            block.timestamp - lastPurchase[msg.sender] >= timeLimit,
+            "Can only purchase once every 24 hours"
+        );
+
+        uint256 currentPrice = calculatePrice();
+        uint256 tokenAmount = (msg.value * 10**18) / currentPrice ; // Adjust based on dynamic price
+        require(tokenAmount <= maxPurchaseLimit, "Exceeds purchase limit");
+
+        // @DEV Fix return
+        IGRULL(GRULL_TOKEN_ADDRESS).mint(msg.sender, tokenAmount);
+        // require(status, "Token transfer failed");
+
+        lastPurchase[msg.sender] = block.timestamp;
+
+        return true;
+    }
+
+    function calculatePrice() public view returns (uint256) {
+        uint256 basePrice = 0.01 ether; // Starting price
+        uint256 supplyFactor = 1000000 * 10**18; // Total supply impact on price
+        uint256 totalSupply = IGRULL(GRULL_TOKEN_ADDRESS).totalSupply();
+        
+        // Simple bonding curve logic for dynamic pricing (price increases with supply)
+        return basePrice + ((totalSupply * basePrice) / supplyFactor);
+    }
+
+    function setApproveDisputeHandler() public onlyOwner returns (bool) {
+        IGRULL(GRULL_TOKEN_ADDRESS).approve(DISPUTE_HANDLER,1000000 * 10**18);
+        return true;
+    }
+
+    //************* General Utility ************//
+
+
 }
 
 interface IGRULL {
@@ -234,6 +289,14 @@ interface IGRULL {
 }
 
 interface IDISPUTE_HANDLER {
-    function settleDispute(uint) external returns (bool);
+
+    function settleDispute(uint) external returns (bool, address);
+    function handleCreateDispute(Dispute memory, uint) external returns (bool);
+    function stakeAndVote(
+        uint256 disputeId,
+        bool voteForA,
+        uint256 stakeAmount,
+        uint[] memory skills
+    ) external;
     // more fns to be added
 }
