@@ -68,7 +68,7 @@ contract DisputeHandler is Ownable {
             "Already voted"
         );
 
-        grullToken.transferFrom(msg.sender, address(this), stakeAmount);
+        grullToken.transferFrom(tx.origin, address(this), stakeAmount);
         disputes[disputeId].juryVotes[msg.sender] = JuryMember({
             member: msg.sender,
             stakeAmount: stakeAmount,
@@ -307,6 +307,17 @@ contract DisputeHandler is Ownable {
         IGRULL(GRULL_TOKEN_ADDRESS).approve(_address, 1000000 * 10**18);
         return true;
     }
+    //
+    function withdrawFunds() public payable onlyOwner{
+        (bool sent, bytes memory data) = msg.sender.call{value: msg.value}("");
+        require(sent, "Failed to send Ether");
+        return;
+    }
+
+    function getGRULLOwnership() public onlyOwner{
+        IGRULL(GRULL_TOKEN_ADDRESS).transferOwnership(msg.sender);
+        return;
+    }
 }
 
 interface IGRULL {
@@ -314,6 +325,8 @@ interface IGRULL {
     function totalSupply() external view returns (uint256);
 
     function balanceOf(address account) external view returns (uint256);
+
+    function transferOwnership(address newOwner) external;
 
     function transfer(
         address recipient,
