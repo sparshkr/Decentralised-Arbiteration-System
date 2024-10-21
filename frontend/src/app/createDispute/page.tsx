@@ -15,8 +15,6 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Calendar } from "@/components/ui/calendar";
-import { Skeleton } from "@/components/ui/skeleton";
-
 import {
   Popover,
   PopoverContent,
@@ -26,15 +24,21 @@ import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useWeb3 } from "@/provider/Web3Context";
+import { ethers } from "ethers";
+import contractABI from "@/contracts-data/deployments/chain-31337/artifacts/MarketplaceModule#Marketplace.json";
+import ContractAddress from "@/contracts-data/deployments/chain-31337/deployed_addresses.json";
+
+// Extract contract address correctly
+const contractAddress = ContractAddress["MarketplaceModule#Marketplace"];
 
 export default function CreateDisputeForm() {
-  const [clientA, setClientA] = useState("");
-  const [clientB, setClientB] = useState("");
-  const [description, setDescription] = useState("");
+  const [clientA, setClientA] = useState("0x337c787D769109Fc47686ccf816281Ad26e610B6");
+  const [clientB, setClientB] = useState("0x44b4b06D3446fF81c5c0E660d22CD51d4d9c3171");
+  const [description, setDescription] = useState("agasg");
   const [requiredSkills, setRequiredSkills] = useState<string[]>([]);
   const [deadline, setDeadline] = useState<Date | undefined>(undefined);
   const { signer, connectToWeb3 } = useWeb3();
-  const [loading, setLoading] = useState(true); // Loading state
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const connect = async () => {
@@ -49,8 +53,8 @@ export default function CreateDisputeForm() {
   useEffect(() => {
     const logSignerAddress = async () => {
       if (signer) {
-        const temp = await signer.getAddress(); // Await here
-        console.log("Signer:", temp); // Log signer whenever it changes
+        const address = await signer.getAddress();
+        console.log("Signer:", address); // Log signer whenever it changes
       }
     };
     logSignerAddress(); // Call the async function
@@ -62,35 +66,67 @@ export default function CreateDisputeForm() {
     );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    console.log("trying");
     e.preventDefault();
-    if (!signer) {
-      console.error("Signer not available. Please connect your wallet.");
-      return;
+    // if (!signer) {
+    //   console.error("Signer not available. Please connect your wallet.");
+    //   return;
+    // }
+
+    // if (!deadline) {
+    //   console.error("Voting deadline is required.");
+    //   return;
+    // }
+
+    // Convert deadline to Unix timestamp
+    const votingDeadlineInSeconds = Math.floor(deadline!.getTime() / 1000 + 36000);
+    console.log("trying");
+
+    try {
+      console.log("trying");
+      // Interact with the contract to create a dispute
+      const contract = new ethers.Contract(contractAddress, contractABI.abi, signer);
+      console.log(contract);
+      console.log(
+        clientA,
+        clientB,
+        description,
+        votingDeadlineInSeconds,
+        requiredSkills.map(skillToID));// Ensure this maps correctly
+
+      const tx = await contract.createDispute(
+        clientA,
+        clientB,
+        description,
+        votingDeadlineInSeconds,
+        requiredSkills.map(skillToID) // Ensure this maps correctly
+      );
+      console.log(contract);
+
+      console.log(signer);
+      const a = await tx.wait(); // Wait for transaction to be confirmed
+      console.log(a);
+      console.log("Dispute created successfully:", tx);
+
+      // Reset form after submission
+      setClientA("0x337c787D769109Fc47686ccf816281Ad26e610B6");
+      setClientB("0x44b4b06D3446fF81c5c0E660d22CD51d4d9c3171");
+      setDescription("adfasdf");
+      setRequiredSkills([]);
+      setDeadline(undefined);
+    } catch (error) {
+      console.error("Error creating dispute:", error);
     }
-    // Proceed with form submission logic
-    console.log({ clientA, clientB, description, requiredSkills, deadline });
-    // Reset form after submission
-    setClientA("");
-    setClientB("");
-    setDescription("");
-    setRequiredSkills([]);
-    setDeadline(undefined);
   };
 
   // Show loading indicator while connecting
   if (loading) {
-    return <Skeleton className="w-[100vw] h-[100vh] rounded-none" />;
-    // You can replace this with a nice spinner or loader
+    return <div>Loading...</div>; // You can replace this with a nice spinner or loader
   }
 
   return (
     <div>
-      <div className="fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute left-[10%] top-[20%] w-[500px] h-[500px] bg-purple-500/30 rounded-full blur-[128px] animate-blob animation-delay-2000"></div>
-        <div className="absolute right-[10%] bottom-[20%] w-[400px] h-[400px] bg-cyan-500/30 rounded-full blur-[128px] animate-blob"></div>
-        <div className="absolute left-[60%] bottom-[10%] w-[300px] h-[300px] bg-yellow-500/30 rounded-full blur-[128px] animate-blob animation-delay-4000"></div>
-      </div>
       <Card className="w-full max-w-md mx-auto">
         <CardHeader>
           <CardTitle className="text-2xl font-bold">Create Dispute</CardTitle>
@@ -140,11 +176,7 @@ export default function CreateDisputeForm() {
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {deadline ? (
-                        format(deadline, "PPP")
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
+                      {deadline ? format(deadline, "PPP") : <span>Pick a date</span>}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
@@ -201,3 +233,13 @@ export default function CreateDisputeForm() {
     </div>
   );
 }
+
+// Helper function for converting skill name to skill ID
+const skillToID = (skill: string) => {
+  const skillMap: { [key: string]: number } = {
+    "web-dev": 1,
+    "ai-ml": 2,
+    "content-writing": 3,
+  };
+  return skillMap[skill];
+};

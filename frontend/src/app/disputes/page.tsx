@@ -248,12 +248,12 @@ import {
 } from "@/components/ui/dialog";
 import { BadgeDollarSign } from "lucide-react"
 import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-  } from "@/components/ui/popover";
-  import { Input } from "@/components/ui/input";
-  import { Label } from "@/components/ui/label";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useWeb3 } from "@/provider/Web3Context";
 import { ethers } from "ethers";
 
@@ -350,18 +350,19 @@ type Dispute = {
 
 export default function DisputePage() {
 
-  const { signer } = useWeb3(); // assuming this returns your web3 provider
+  // const { signer } = useWeb3(); // assuming this returns your web3 provider
   const [disputes, setDisputes] = useState<Dispute[]>([]);
   const [stakeAmount, setStakeAmount] = useState("");
-  const [selectedClient,setSelectedClient] = useState("");
+  const [selectedClient, setSelectedClient] = useState("");
   const [skills, setSkills] = useState<string[]>([]);
-
+  const { signer, connectToWeb3 } = useWeb3();
+  const [loading, setLoading] = useState(true);
   const skillsMap: { [key: string]: number } = {
     "Web Development": 1,
     "AI/ML": 2,
     "Content Writing": 3,
   };
-  
+
 
   const handleStake = (disputeId: number) => {
     // Here you would implement the actual staking logic
@@ -369,28 +370,28 @@ export default function DisputePage() {
       `Staking ${stakeAmount} GRULL tokens for dispute #${disputeId}`
     );
 
-    try{
-    const contract = new ethers.Contract(contractAddress1, contractABI1.abi, signer);
+    try {
+      const contract = new ethers.Contract(contractAddress1, contractABI1.abi, signer);
 
 
-    let stakeamt = stakeAmount;
-    const voteforA = selectedClient == "clientA" ? 1 : 0;
-    console.log(disputeId);
-    console.log(voteforA);
+      let stakeamt = stakeAmount;
+      const voteforA = selectedClient == "clientA" ? 1 : 0;
+      console.log(disputeId);
+      console.log(voteforA);
 
-    console.log(stakeamt);
+      console.log(stakeamt);
 
-    const skillNumbers = skills.map(skill => skillsMap[skill]);
-    console.log(skillNumbers);  // [1, 2] if "Web Development" and "AI/ML" are selected
+      const skillNumbers = skills.map(skill => skillsMap[skill]);
+      console.log(skillNumbers);  // [1, 2] if "Web Development" and "AI/ML" are selected
 
-    // Call the contract method with skills array
-    contract.stakeAndVote(disputeId, voteforA, stakeamt, skillNumbers);
+      // Call the contract method with skills array
+      contract.stakeAndVote(disputeId, voteforA, stakeamt, skillNumbers);
 
-    
-      
-      
 
-    }catch(error){
+
+
+
+    } catch (error) {
       console.error("Error staking and voting:", error);
     }
 
@@ -399,7 +400,7 @@ export default function DisputePage() {
   };
 
 
- const handleSkillChange = (skill: string) => {
+  const handleSkillChange = (skill: string) => {
     setSkills((prevSkills) =>
       prevSkills.includes(skill)
         ? prevSkills.filter((s) => s !== skill)
@@ -408,9 +409,11 @@ export default function DisputePage() {
   };
 
 
+
   useEffect(() => {
     const fetchDisputes = async () => {
-      if (!signer) return;
+      if (!signer) {
+        await connectToWeb3()};
 
       const contract = new ethers.Contract(contractAddress, contractABI.abi, signer);
       console.log("Contract", contract);
@@ -424,7 +427,7 @@ export default function DisputePage() {
       for (let i = 1; i <= disputeCount; i++) {
         const dispute = await contract.getDispute(i);
         console.log("Here");
-        
+
         disputesData.push({
           id: Number(dispute.id), // Assuming id is a BigNumber, convert it to number
           creator: dispute.creator, // Fetch creator's address
@@ -432,7 +435,7 @@ export default function DisputePage() {
           clientB: dispute.clientB,
           description: dispute.description,
           skillsReqd: dispute.skillsReqd, // Assuming skillsReqd is fetched as an array
-          votingDeadline:Number( dispute.votingDeadline), // Assuming votingDeadline is a BigNumber, convert to number
+          votingDeadline: Number(dispute.votingDeadline), // Assuming votingDeadline is a BigNumber, convert to number
           isResolved: dispute.isResolved,
         });
       }
@@ -442,6 +445,10 @@ export default function DisputePage() {
 
     fetchDisputes();
   }, [signer]);
+
+  if (loading) {
+    return <div>Loading...</div>; // You can replace this with a nice spinner or loader
+  }
 
 
   return (
