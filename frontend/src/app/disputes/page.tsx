@@ -180,7 +180,9 @@ export default function Component() {
                         </h4>
                         <p className="text-sm text-muted-foreground">
                           Enter the amount of GRULL tokens you want to stake and
-                          select a client to vote for.
+                          select a client to vote for. Enter the amount of GRULL
+                          tokens you want to stake and select a client to vote
+                          for.
                         </p>
                       </div>
                       <div className="grid gap-2">
@@ -248,6 +250,7 @@ export default function Component() {
                           </div>
                         </div>
                       </div>
+
                       <Button
                         onClick={() => handleStake(dispute.id)}
                         disabled={
