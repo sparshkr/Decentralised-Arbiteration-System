@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+// import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,85 +21,122 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useWeb3 } from "@/provider/Web3Context";
+import { ethers } from "ethers";
+
+import { useEffect, useState } from "react";
+// import contractABI from "@/artifacts/MarketplaceModule#Marketplace.json";
+import contractABI from "@/contracts-data/ignition/deployments/chain-80002/artifacts/MarketplaceModule#Marketplace.json";
+import contractABI1 from "@/contracts-data/ignition/deployments/chain-80002/artifacts/DisputeHandlerModule#DisputeHandler.json";
+// import { Checkbox } from "@/components/ui/checkbox";
+import ContractAddress from "@/contracts-data/ignition/deployments/chain-80002/deployed_addresses.json";
+// import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { log } from "util";
+const contractAddress = ContractAddress["MarketplaceModule#Marketplace"];
+const contractAddress1 = ContractAddress["DisputeHandlerModule#DisputeHandler"];
 
 type Dispute = {
-  title: string;
+  // title: string;
+  // id: number;
+  // creator: string; // Added creator field
+
+  // clientA: string;
+  // clientB: string;
+  // description: string;
+  // isResolved: boolean;
+  // skillsReqd: number[]; // Updated to reflect skills required as an array
+  // winner: string;
+  // votingDeadline: number; // Adjusted type for voting deadline if needed
+
   id: number;
+  creator: string; // Added creator field
   clientA: string;
   clientB: string;
   description: string;
+  skillsReqd: number[]; // Updated to reflect skills required as an array
+  votingDeadline: number; // Adjusted type for voting deadline if needed
   isResolved: boolean;
-  clientAStatement: string;
-  clientBStatement: string;
+  winner: string;
+
+  // clientAStatement: string;
+  // clientBStatement: string;
 };
 
-const disputes: Dispute[] = [
-  {
-    id: 1,
-    title: "Dispute number 1",
-    clientA: "0x1234...5678",
-    clientB: "0xabcd...efgh",
-    clientAStatement: "This is client A statement",
-    clientBStatement: "This is client B statement",
-    description: "Disagreement over project deliverables",
-    isResolved: false,
-  },
-  {
-    id: 2,
-    title: "Dispute number 2",
-    clientA: "0x8765...4321",
-    clientB: "0xijkl...mnop",
-    clientAStatement: "This is client A statement",
-    clientBStatement: "This is client B statement",
-    description: "Payment dispute for completed work",
-    isResolved: true,
-  },
-  {
-    id: 3,
-    title: "Dispute number 3",
-    clientA: "0x2468...1357",
-    clientB: "0xqrst...uvwx",
-    clientAStatement: "This is client A statement",
-    clientBStatement: "This is client B statement",
-    description: "Conflict regarding intellectual property rights",
-    isResolved: false,
-  },
-  {
-    id: 4,
-    title: "Dispute number 4",
-    clientA: "0x1234...5678",
-    clientB: "0xabcd...efgh",
-    clientAStatement: "This is client A statement",
-    clientBStatement: "This is client B statement",
-    description: "Disagreement over project deliverables",
-    isResolved: false,
-  },
-  {
-    id: 5,
-    title: "Dispute number 5",
-    clientA: "0x8765...4321",
-    clientB: "0xijkl...mnop",
-    clientAStatement: "This is client A statement",
-    clientBStatement: "This is client B statement",
-    description: "Payment dispute for completed work",
-    isResolved: true,
-  },
-  {
-    id: 6,
-    title: "Dispute number 6",
-    clientA: "0x2468...1357",
-    clientB: "0xqrst...uvwx",
-    clientAStatement: "This is client A statement",
-    clientBStatement: "This is client B statement",
-    description: "Conflict regarding intellectual property rights",
-    isResolved: false,
-  },
-];
+// const disputes: Dispute[] = [
+//   {
+//     id: 1,
+//     title: "Dispute number 1",
+//     clientA: "0x1234...5678",
+//     clientB: "0xabcd...efgh",
+//     clientAStatement: "This is client A statement",
+//     clientBStatement: "This is client B statement",
+//     description: "Disagreement over project deliverables",
+//     isResolved: false,
+//   },
+//   {
+//     id: 2,
+//     title: "Dispute number 2",
+//     clientA: "0x8765...4321",
+//     clientB: "0xijkl...mnop",
+//     clientAStatement: "This is client A statement",
+//     clientBStatement: "This is client B statement",
+//     description: "Payment dispute for completed work",
+//     isResolved: true,
+//   },
+//   {
+//     id: 3,
+//     title: "Dispute number 3",
+//     clientA: "0x2468...1357",
+//     clientB: "0xqrst...uvwx",
+//     clientAStatement: "This is client A statement",
+//     clientBStatement: "This is client B statement",
+//     description: "Conflict regarding intellectual property rights",
+//     isResolved: false,
+//   },
+//   {
+//     id: 4,
+//     title: "Dispute number 4",
+//     clientA: "0x1234...5678",
+//     clientB: "0xabcd...efgh",
+//     clientAStatement: "This is client A statement",
+//     clientBStatement: "This is client B statement",
+//     description: "Disagreement over project deliverables",
+//     isResolved: false,
+//   },
+//   {
+//     id: 5,
+//     title: "Dispute number 5",
+//     clientA: "0x8765...4321",
+//     clientB: "0xijkl...mnop",
+//     clientAStatement: "This is client A statement",
+//     clientBStatement: "This is client B statement",
+//     description: "Payment dispute for completed work",
+//     isResolved: true,
+//   },
+//   {
+//     id: 6,
+//     title: "Dispute number 6",
+//     clientA: "0x2468...1357",
+//     clientB: "0xqrst...uvwx",
+//     clientAStatement: "This is client A statement",
+//     clientBStatement: "This is client B statement",
+//     description: "Conflict regarding intellectual property rights",
+//     isResolved: false,
+//   },
+// ];
 
 export default function Component() {
+  const { signer } = useWeb3(); // assuming this returns your web3 provider
+  const [disputes, setDisputes] = useState<Dispute[]>([]);
   const [stakeAmount, setStakeAmount] = useState("");
   const [selectedClient, setSelectedClient] = useState("");
   const [skills, setSkills] = useState<string[]>([]);
+
+  const skillsMap: { [key: string]: number } = {
+    "Web Development": 1,
+    "AI/ML": 2,
+    "Content Writing": 3,
+  };
 
   const handleStake = (disputeId: number) => {
     console.log(
@@ -107,6 +144,35 @@ export default function Component() {
         ", "
       )}`
     );
+
+    try {
+      const contract = new ethers.Contract(
+        contractAddress1,
+        contractABI1.abi,
+        signer
+      );
+
+      // let stakeamt = stakeAmount;
+      const stakeamt = ethers.parseUnits(stakeAmount, 18);
+
+      const voteforA = selectedClient == "clientA" ? 1 : 0;
+      console.log(disputeId);
+      console.log(voteforA);
+
+      console.log(stakeamt);
+
+      const skillNumbers = skills.map((skill) => skillsMap[skill]);
+      console.log(skillNumbers); // [1, 2] if "Web Development" and "AI/ML" are selected
+
+      // Call the contract method with skills array
+      contract.stakeAndVote(disputeId, voteforA, stakeamt, skillNumbers);
+    } catch (error) {
+      console.error("Error staking and voting:", error);
+    }
+
+    // Reset stake amount and close popover (handled automatically by Popover component)
+    // setStakeAmount("");
+
     setStakeAmount("");
     setSelectedClient("");
     setSkills([]);
@@ -119,6 +185,48 @@ export default function Component() {
         : [...prevSkills, skill]
     );
   };
+
+  useEffect(() => {
+    const fetchDisputes = async () => {
+      if (!signer) return;
+
+      const contract = new ethers.Contract(
+        contractAddress,
+        contractABI.abi,
+        signer
+      );
+      console.log("Contract sf", contract);
+
+      // const disputeCount = 5;
+      let disputeCount = await contract.getDisputeCount();
+      console.log(disputeCount);
+
+      disputeCount = Number(disputeCount);
+      console.log("fsA", disputeCount);
+
+      const disputesData: Dispute[] = [];
+      for (let i = 1; i <= disputeCount; i++) {
+        const dispute = await contract.getDispute(i);
+        console.log("Here");
+
+        disputesData.push({
+          id: Number(dispute.id),
+          creator: dispute.creator,
+          clientA: dispute.clientA,
+          clientB: dispute.clientB,
+          description: dispute.description,
+          skillsReqd: dispute.skillsReqd, // Assuming skillsReqd is fetched as an array
+          votingDeadline: Number(dispute.votingDeadline), // Assuming votingDeadline is a BigNumber, convert to number
+          isResolved: dispute.isResolved,
+          winner: dispute.winner,
+        });
+      }
+
+      setDisputes(disputesData);
+    };
+
+    fetchDisputes();
+  }, [signer]);
 
   return (
     <div className="container mx-auto py-10">

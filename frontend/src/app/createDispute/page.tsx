@@ -26,8 +26,8 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useWeb3 } from "@/provider/Web3Context";
 import { ethers } from "ethers";
-import contractABI from "@/contracts-data/deployments/chain-31337/artifacts/MarketplaceModule#Marketplace.json";
-import ContractAddress from "@/contracts-data/deployments/chain-31337/deployed_addresses.json";
+import contractABI from "@/contracts-data/ignition/deployments/chain-80002/artifacts/MarketplaceModule#Marketplace.json";
+import ContractAddress from "@/contracts-data/ignition/deployments/chain-80002/deployed_addresses.json";
 // import { toast } from "@/components/ui/use-toast";
 import { useToast } from "@/hooks/use-toast";
 
@@ -35,13 +35,9 @@ import { useToast } from "@/hooks/use-toast";
 const contractAddress = ContractAddress["MarketplaceModule#Marketplace"];
 
 export default function CreateDisputeForm() {
-  const [clientA, setClientA] = useState(
-    "0x337c787D769109Fc47686ccf816281Ad26e610B6"
-  );
-  const [clientB, setClientB] = useState(
-    "0x44b4b06D3446fF81c5c0E660d22CD51d4d9c3171"
-  );
-  const [description, setDescription] = useState("agasg");
+  const [clientA, setClientA] = useState("");
+  const [clientB, setClientB] = useState("");
+  const [description, setDescription] = useState("");
   const [requiredSkills, setRequiredSkills] = useState<string[]>([]);
   const [deadline, setDeadline] = useState<Date | undefined>(undefined);
   const { signer, connectToWeb3 } = useWeb3();
@@ -127,7 +123,7 @@ export default function CreateDisputeForm() {
       );
 
       await tx.wait(); // Wait for transaction to be confirmed
-
+      console.log("dispute created");
       toast({
         title: "Dispute Created",
         description: "Your dispute has been successfully created.",
@@ -135,9 +131,9 @@ export default function CreateDisputeForm() {
       });
 
       // Reset form after submission
-      setClientA("0x337c787D769109Fc47686ccf816281Ad26e610B6");
-      setClientB("0x44b4b06D3446fF81c5c0E660d22CD51d4d9c3171");
-      setDescription("adfasdf");
+      setClientA("");
+      setClientB("");
+      setDescription("");
       setRequiredSkills([]);
       setDeadline(undefined);
     } catch (error) {

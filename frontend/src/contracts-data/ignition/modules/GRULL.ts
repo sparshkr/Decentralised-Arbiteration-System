@@ -4,7 +4,7 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 
 const GRULLModule = buildModule("GRULLModule", (m) => {
-  const GRULL = m.contract("GRULL", ["0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199"]);
+  const GRULL = m.contract("GRULL", ["0x337c787D769109Fc47686ccf816281Ad26e610B6"]);
   return { GRULL };
 });
 
