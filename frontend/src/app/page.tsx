@@ -281,12 +281,16 @@ export default function Home() {
         <Cta />
         <Testimonials />
         <Team />
-        <Pricing />
-        <Newsletter />
-        <FAQ />
+
+        {/* <Pricing /> */}
+        {/* <Newsletter /> */}
+        {/* <FAQ /> */}
+
         <Footer />
         <ScrollToTop />
       </div>
     </div>
   );
+
 }
+

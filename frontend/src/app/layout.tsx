@@ -12,14 +12,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
-        <Web3Provider>
+      <Web3Provider>
+        <body>
           <ThemeProvider>
-            <Navbar />
-            {children}
+            {/* <Navbar /> */}
+            {/* {children} */}
+            <Navbar>{children}</Navbar>
           </ThemeProvider>
-        </Web3Provider>
-      </body>
+        </body>
+      </Web3Provider>
     </html>
   );
 }

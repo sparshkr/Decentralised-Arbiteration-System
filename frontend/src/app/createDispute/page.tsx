@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -25,8 +26,12 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useWeb3 } from "@/provider/Web3Context";
 import { ethers } from "ethers";
-import contractABI from "@/contracts-data/deployments/chain-31337/artifacts/MarketplaceModule#Marketplace.json";
-import ContractAddress from "@/contracts-data/deployments/chain-31337/deployed_addresses.json";
+
+import contractABI from "@/contracts-data/ignition/deployments/chain-80002/artifacts/MarketplaceModule#Marketplace.json";
+import ContractAddress from "@/contracts-data/ignition/deployments/chain-80002/deployed_addresses.json";
+// import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
+
 
 // Extract contract address correctly
 const contractAddress = ContractAddress["MarketplaceModule#Marketplace"];
@@ -40,6 +45,11 @@ export default function CreateDisputeForm() {
   const { signer, connectToWeb3 } = useWeb3();
   const [loading, setLoading] = useState(true);
 
+  const router = useRouter();
+  const { toast } = useToast();
+
+
+
   useEffect(() => {
     const connect = async () => {
       if (!signer) {
@@ -49,6 +59,17 @@ export default function CreateDisputeForm() {
     };
     connect();
   }, [signer, connectToWeb3]);
+
+  useEffect(() => {
+    if (!loading && !signer) {
+      toast({
+        title: "Login Required",
+        description: "Please login first to view this page",
+        variant: "destructive",
+      });
+      router.push("http://localhost:3000/Attachment");
+    }
+  }, [loading, signer, router]);
 
   useEffect(() => {
     const logSignerAddress = async () => {
@@ -67,62 +88,83 @@ export default function CreateDisputeForm() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    console.log("trying");
-    e.preventDefault();
-    // if (!signer) {
-    //   console.error("Signer not available. Please connect your wallet.");
-    //   return;
-    // }
 
-    // if (!deadline) {
-    //   console.error("Voting deadline is required.");
-    //   return;
-    // }
+    e.preventDefault();
+    if (!signer) {
+      toast({
+        title: "Login Required",
+        description: "Please connect your wallet to create a dispute.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!deadline) {
+      toast({
+        title: "Deadline Required",
+        description: "Please select a voting deadline.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     // Convert deadline to Unix timestamp
-    const votingDeadlineInSeconds = Math.floor(deadline!.getTime() / 1000 + 36000);
-    console.log("trying");
+    const votingDeadlineInSeconds = Math.floor(
+      deadline.getTime() / 1000 + 36000
+    );
 
     try {
-      console.log("trying");
       // Interact with the contract to create a dispute
-      const contract = new ethers.Contract(contractAddress, contractABI.abi, signer);
-      console.log(contract);
-      console.log(
-        clientA,
-        clientB,
-        description,
-        votingDeadlineInSeconds,
-        requiredSkills.map(skillToID));// Ensure this maps correctly
+      const contract = new ethers.Contract(
+        contractAddress,
+        contractABI.abi,
+        signer
+      );
 
       const tx = await contract.createDispute(
         clientA,
         clientB,
         description,
         votingDeadlineInSeconds,
-        requiredSkills.map(skillToID) // Ensure this maps correctly
+        requiredSkills.map(skillToID)
       );
-      console.log(contract);
 
-      console.log(signer);
-      const a = await tx.wait(); // Wait for transaction to be confirmed
-      console.log(a);
-      console.log("Dispute created successfully:", tx);
+      await tx.wait(); // Wait for transaction to be confirmed
+      console.log("dispute created");
+      toast({
+        title: "Dispute Created",
+        description: "Your dispute has been successfully created.",
+        variant: "default",
+      });
 
       // Reset form after submission
-      setClientA("0x337c787D769109Fc47686ccf816281Ad26e610B6");
-      setClientB("0x44b4b06D3446fF81c5c0E660d22CD51d4d9c3171");
-      setDescription("adfasdf");
+      setClientA("");
+      setClientB("");
+      setDescription("");
       setRequiredSkills([]);
       setDeadline(undefined);
     } catch (error) {
       console.error("Error creating dispute:", error);
+      toast({
+        title: "Error",
+        description:
+          "An error occurred while creating the dispute. Please try again.",
+        variant: "destructive",
+      });
     }
+
   };
 
   // Show loading indicator while connecting
   if (loading) {
-    return <div>Loading...</div>; // You can replace this with a nice spinner or loader
+
+    return <div>Loading...</div>;
+  }
+
+  // If signer is null or undefined, the useEffect will handle redirection
+  if (!signer) {
+    return null;
+
   }
 
   return (
@@ -224,7 +266,7 @@ export default function CreateDisputeForm() {
             </div>
           </CardContent>
           <CardFooter>
-            <Button type="submit" className="w-full" disabled={!signer}>
+            <Button type="submit" className="w-full">
               Create Dispute
             </Button>
           </CardFooter>
@@ -242,4 +284,6 @@ const skillToID = (skill: string) => {
     "content-writing": 3,
   };
   return skillMap[skill];
+
 };
+
