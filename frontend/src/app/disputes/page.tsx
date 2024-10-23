@@ -1,6 +1,7 @@
-"use client";
+// "use client";
 
 // import { useState } from "react";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,19 +14,33 @@ import {
 } from "@/components/ui/card";
 import { Check, X } from "lucide-react";
 import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { BadgeDollarSign } from "lucide-react"
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
+
 import { useWeb3 } from "@/provider/Web3Context";
 import { ethers } from "ethers";
 
 import { useEffect, useState } from "react";
 // import contractABI from "@/artifacts/MarketplaceModule#Marketplace.json";
+
 import contractABI from "@/contracts-data/ignition/deployments/chain-80002/artifacts/MarketplaceModule#Marketplace.json";
 import contractABI1 from "@/contracts-data/ignition/deployments/chain-80002/artifacts/DisputeHandlerModule#DisputeHandler.json";
 // import { Checkbox } from "@/components/ui/checkbox";
@@ -35,7 +50,9 @@ import { log } from "util";
 const contractAddress = ContractAddress["MarketplaceModule#Marketplace"];
 const contractAddress1 = ContractAddress["DisputeHandlerModule#DisputeHandler"];
 
+
 type Dispute = {
+
   // title: string;
   // id: number;
   // creator: string; // Added creator field
@@ -48,6 +65,7 @@ type Dispute = {
   // winner: string;
   // votingDeadline: number; // Adjusted type for voting deadline if needed
 
+
   id: number;
   creator: string; // Added creator field
   clientA: string;
@@ -56,6 +74,7 @@ type Dispute = {
   skillsReqd: number[]; // Updated to reflect skills required as an array
   votingDeadline: number; // Adjusted type for voting deadline if needed
   isResolved: boolean;
+
   winner: string;
 
   // clientAStatement: string;
@@ -70,73 +89,89 @@ type Dispute = {
 //     clientB: "0xabcd...efgh",
 //     clientAStatement: "This is client A statement",
 //     clientBStatement: "This is client B statement",
+
 //     description: "Disagreement over project deliverables",
 //     isResolved: false,
 //   },
 //   {
 //     id: 2,
+
 //     title: "Dispute number 2",
 //     clientA: "0x8765...4321",
 //     clientB: "0xijkl...mnop",
 //     clientAStatement: "This is client A statement",
 //     clientBStatement: "This is client B statement",
+
 //     description: "Payment dispute for completed work",
 //     isResolved: true,
 //   },
 //   {
 //     id: 3,
+
 //     title: "Dispute number 3",
 //     clientA: "0x2468...1357",
 //     clientB: "0xqrst...uvwx",
 //     clientAStatement: "This is client A statement",
 //     clientBStatement: "This is client B statement",
+
 //     description: "Conflict regarding intellectual property rights",
 //     isResolved: false,
 //   },
 //   {
 //     id: 4,
+
 //     title: "Dispute number 4",
 //     clientA: "0x1234...5678",
 //     clientB: "0xabcd...efgh",
 //     clientAStatement: "This is client A statement",
 //     clientBStatement: "This is client B statement",
+
 //     description: "Disagreement over project deliverables",
 //     isResolved: false,
 //   },
 //   {
 //     id: 5,
+
 //     title: "Dispute number 5",
 //     clientA: "0x8765...4321",
 //     clientB: "0xijkl...mnop",
 //     clientAStatement: "This is client A statement",
 //     clientBStatement: "This is client B statement",
+
 //     description: "Payment dispute for completed work",
 //     isResolved: true,
 //   },
 //   {
 //     id: 6,
+
 //     title: "Dispute number 6",
 //     clientA: "0x2468...1357",
 //     clientB: "0xqrst...uvwx",
 //     clientAStatement: "This is client A statement",
 //     clientBStatement: "This is client B statement",
+
 //     description: "Conflict regarding intellectual property rights",
 //     isResolved: false,
 //   },
 // ];
 
+
 export default function Component() {
   const { signer } = useWeb3(); // assuming this returns your web3 provider
+
   const [disputes, setDisputes] = useState<Dispute[]>([]);
   const [stakeAmount, setStakeAmount] = useState("");
   const [selectedClient, setSelectedClient] = useState("");
   const [skills, setSkills] = useState<string[]>([]);
+
+
 
   const skillsMap: { [key: string]: number } = {
     "Web Development": 1,
     "AI/ML": 2,
     "Content Writing": 3,
   };
+
 
   const handleStake = (disputeId: number) => {
     console.log(
@@ -146,6 +181,7 @@ export default function Component() {
     );
 
     try {
+
       const contract = new ethers.Contract(
         contractAddress1,
         contractABI1.abi,
@@ -155,17 +191,20 @@ export default function Component() {
       // let stakeamt = stakeAmount;
       const stakeamt = ethers.parseUnits(stakeAmount, 18);
 
+
       const voteforA = selectedClient == "clientA" ? 1 : 0;
       console.log(disputeId);
       console.log(voteforA);
 
       console.log(stakeamt);
 
+
       const skillNumbers = skills.map((skill) => skillsMap[skill]);
       console.log(skillNumbers); // [1, 2] if "Web Development" and "AI/ML" are selected
 
       // Call the contract method with skills array
       contract.stakeAndVote(disputeId, voteforA, stakeamt, skillNumbers);
+
     } catch (error) {
       console.error("Error staking and voting:", error);
     }
@@ -185,6 +224,7 @@ export default function Component() {
         : [...prevSkills, skill]
     );
   };
+
 
   useEffect(() => {
     const fetchDisputes = async () => {
@@ -210,15 +250,19 @@ export default function Component() {
         console.log("Here");
 
         disputesData.push({
+
           id: Number(dispute.id),
           creator: dispute.creator,
+
           clientA: dispute.clientA,
           clientB: dispute.clientB,
           description: dispute.description,
           skillsReqd: dispute.skillsReqd, // Assuming skillsReqd is fetched as an array
           votingDeadline: Number(dispute.votingDeadline), // Assuming votingDeadline is a BigNumber, convert to number
           isResolved: dispute.isResolved,
+
           winner: dispute.winner,
+
         });
       }
 
@@ -227,6 +271,7 @@ export default function Component() {
 
     fetchDisputes();
   }, [signer]);
+
 
   return (
     <div className="container mx-auto py-10">
@@ -288,9 +333,11 @@ export default function Component() {
                         </h4>
                         <p className="text-sm text-muted-foreground">
                           Enter the amount of GRULL tokens you want to stake and
+
                           select a client to vote for. Enter the amount of GRULL
                           tokens you want to stake and select a client to vote
                           for.
+
                         </p>
                       </div>
                       <div className="grid gap-2">

@@ -26,24 +26,30 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useWeb3 } from "@/provider/Web3Context";
 import { ethers } from "ethers";
+
 import contractABI from "@/contracts-data/ignition/deployments/chain-80002/artifacts/MarketplaceModule#Marketplace.json";
 import ContractAddress from "@/contracts-data/ignition/deployments/chain-80002/deployed_addresses.json";
 // import { toast } from "@/components/ui/use-toast";
 import { useToast } from "@/hooks/use-toast";
 
+
 // Extract contract address correctly
 const contractAddress = ContractAddress["MarketplaceModule#Marketplace"];
 
 export default function CreateDisputeForm() {
-  const [clientA, setClientA] = useState("");
-  const [clientB, setClientB] = useState("");
-  const [description, setDescription] = useState("");
+  const [clientA, setClientA] = useState("0x337c787D769109Fc47686ccf816281Ad26e610B6");
+  const [clientB, setClientB] = useState("0x44b4b06D3446fF81c5c0E660d22CD51d4d9c3171");
+  const [description, setDescription] = useState("agasg");
   const [requiredSkills, setRequiredSkills] = useState<string[]>([]);
   const [deadline, setDeadline] = useState<Date | undefined>(undefined);
   const { signer, connectToWeb3 } = useWeb3();
   const [loading, setLoading] = useState(true);
+
   const router = useRouter();
   const { toast } = useToast();
+
+
+
   useEffect(() => {
     const connect = async () => {
       if (!signer) {
@@ -82,6 +88,7 @@ export default function CreateDisputeForm() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+
     e.preventDefault();
     if (!signer) {
       toast({
@@ -145,25 +152,23 @@ export default function CreateDisputeForm() {
         variant: "destructive",
       });
     }
+
   };
 
   // Show loading indicator while connecting
   if (loading) {
+
     return <div>Loading...</div>;
   }
 
   // If signer is null or undefined, the useEffect will handle redirection
   if (!signer) {
     return null;
+
   }
 
   return (
     <div>
-      <div className="fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute left-[10%] top-[20%] w-[500px] h-[500px] bg-purple-500/30 rounded-full blur-[128px] animate-blob animation-delay-2000"></div>
-        <div className="absolute right-[10%] bottom-[20%] w-[400px] h-[400px] bg-cyan-500/30 rounded-full blur-[128px] animate-blob"></div>
-        <div className="absolute left-[60%] bottom-[10%] w-[300px] h-[300px] bg-yellow-500/30 rounded-full blur-[128px] animate-blob animation-delay-4000"></div>
-      </div>
       <Card className="w-full max-w-md mx-auto">
         <CardHeader>
           <CardTitle className="text-2xl font-bold">Create Dispute</CardTitle>
@@ -213,11 +218,7 @@ export default function CreateDisputeForm() {
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {deadline ? (
-                        format(deadline, "PPP")
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
+                      {deadline ? format(deadline, "PPP") : <span>Pick a date</span>}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
@@ -283,4 +284,6 @@ const skillToID = (skill: string) => {
     "content-writing": 3,
   };
   return skillMap[skill];
+
 };
+
